@@ -9,6 +9,7 @@ import sys
 import requests
 from tabulate import tabulate
 from bs4 import BeautifulSoup
+import datetime
 
 def eORd_list(eORd, dt): #eORd=earnings or dividends dt= date in "m/d/yyyy" format
     nameOf=[]
@@ -70,24 +71,30 @@ def main():
     names=[]
     dORes=[]
     tbl_row=[] 
-    names, dORes=eORd_list(sys.argv[1], sys.argv[2])
+    names, dORes=eORd_list(sys.argv[-2], sys.argv[-1])
     if len(names)==0:
         print("Please use keyword 'dividends' or 'earnings'. ")
-    else:   
-        if sys.argv[1]=="dividends":
-            tbl_row.append(['Dividends','Notes', 'Names', 'Prices', 'Changes', 'Percentages', 'Open','Close', '52Highs', '52Lows', '52Perf', 'Volumes'])
-        elif sys.argv[1]=="earnings":
-            names, earns=eORd_list(sys.argv[1], sys.argv[2])
-            tbl_row.append(['Earns Surprises','Notes', 'Names', 'Prices', 'Changes', 'Percentages', 'Open','Close', '52Highs', '52Lows', '52Perf', 'Volumes'])
-        for (name, dORe) in zip(names, dORes):       
-            tbl_row.append(quote_details(name, dORe))
-        print("date:"+sys.argv[2])
-        print(tabulate(tbl_row, headers="firstrow", tablefmt="fancy_grid"))
-        print("Note 1: + or -: current price increased or decreased;")
-        print("Note 2: */: current price is within 5% of 52 week high;")
-        print("Note 3: /*: current price is within 5% of 52 week low;")
+    else:
+        dt=sys.argv[-1].split("/", 3)
+
+        if datetime.date(int(dt[2]), int(dt[0]), int(dt[1])).weekday()>4:
+            print("There is no reports on weekends")
+        else:   
+                if sys.argv[-2]=="dividends":
+                    tbl_row.append(['Dividends','Notes', 'Names', 'Prices', 'Changes', 'Percentages', 'Open','Close', '52Highs', '52Lows', '52Perf', 'Volumes'])
+                elif sys.argv[-2]=="earnings":
+                    names, earns=eORd_list(sys.argv[-2], sys.argv[-1])
+                    tbl_row.append(['Earns Surprises','Notes', 'Names', 'Prices', 'Changes', 'Percentages', 'Open','Close', '52Highs', '52Lows', '52Perf', 'Volumes'])
+                for (name, dORe) in zip(names, dORes):       
+                        tbl_row.append(quote_details(name, dORe))
+                print("date:"+sys.argv[-1])
+                print(tabulate(tbl_row, headers="firstrow", tablefmt="fancy_grid"))
+                print("Note 1: + or -: current price increased or decreased;")
+                print("Note 2: */: current price is within 5% of 52 week high;")
+                print("Note 3: /*: current price is within 5% of 52 week low;")
+
 if __name__ == "__main__":
     if len(sys.argv)<3:
         print("Please provide the key word 'earnings' or 'dividends' and a date in the format 'm/d/yyyy'!")
-    else:    
+    else: 
         main()
